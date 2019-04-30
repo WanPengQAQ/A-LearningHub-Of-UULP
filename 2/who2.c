@@ -3,24 +3,23 @@
 #include<unistd.h>
 #include<fcntl.h>
 #include<stdlib.h>
-/*this "who" do not include buffer*/
+
+/*this "who" include buffer*/
 #define SHOWHOST
 void show_info(struct utmp* utbufp);	//show information
 
 int main(){
-	struct utmp current_record;
-	int utmpfd;
-	int reclen = sizeof(current_record);
-	if( ( utmpfd=open(UTMP_FILE, O_RDONLY)) == -1  ){ //UTMP_FILE in utmp.h
-		perror(UTMP_FILE);
+	int fd;
+	struct utmp *utmp_point;
+	fd = utmp_open(UTMP_FILE);
+	if(fd == -1){						//open utmp
+		fprintf(stderr,"Cannot open %s\n",UTMP_FILE);
 		exit(1);
+	}	
+	while((utmp_point=utmp_next())!= ((struct utmp*)NULL)){	//show utmp
+		show_info(utmp_point);
 	}
-	
-	while(read(utmpfd,&current_record,reclen) == reclen){ //read reclen bytes from current_record
-		show_info(&current_record);
-	}
-
-	close(utmpfd);
+	utmp_close();						//close utmp
 	return 0;
 }
 
